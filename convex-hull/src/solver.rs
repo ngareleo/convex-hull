@@ -74,4 +74,12 @@ mod solver_tests {
         let solver = Solver::new();
         let _ = solver.load_points_from_file("./res/invalid_test_file.txt").unwrap();
     }
+
+    #[test]
+    fn test_invalid_ok_file() {
+        let solver = Solver::new();
+        let points = solver.load_points_from_file("./res/invalid_ok_test_file.txt").unwrap();
+        assert_eq!(points[0].as_tuple(), (2, 0));
+        assert_eq!(points[1].as_tuple(), (9, -1));
+    }
 }
