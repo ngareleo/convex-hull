@@ -54,3 +54,24 @@ impl Solver {
         Ok(points)
     }
 }
+
+#[cfg(test)]
+mod solver_tests {
+    use super::*;
+
+    #[test]
+    fn test_valid_file() {
+        let solver = Solver::new();
+        let points = solver.load_points_from_file("./res/valid_test_file.txt").unwrap();
+        assert_eq!(points[0].as_tuple(), (2, 2));
+        assert_eq!(points[1].as_tuple(), (-4, -5));
+        assert_eq!(points[2].as_tuple(), (2, 0))
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_invalid_file() {
+        let solver = Solver::new();
+        let _ = solver.load_points_from_file("./res/invalid_test_file.txt").unwrap();
+    }
+}
