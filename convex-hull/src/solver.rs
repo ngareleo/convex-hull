@@ -1,11 +1,13 @@
 use std::fs;
 
+use raylib::misc::AsF32;
+
 // coordinates range from 0 to 100
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Point {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Point {
@@ -39,6 +41,45 @@ impl Solver {
     pub fn load_points_from_file(&mut self, file_path: &str) -> Result<(), String> {
         self.points = Some(read_from_file(file_path)?);
         Ok(())
+    }
+
+    pub fn solve(&self) -> Result<Vec<Point>, String> {
+        let mut points = self.points.clone().unwrap_or(vec![]);
+
+        match points.len() {
+            0..=3 => Err("Points less than 3".to_string()),
+            _ => {
+                points.sort_by(|a, b| b.x.cmp(&a.x));
+                let seed_point = points
+                    .first()
+                    .ok_or("Cannot start graham scan without data points".to_string())?
+                    .clone();
+                let mut hull = vec![seed_point.clone()];
+                points.remove(0);
+                let mut pool = points.clone();
+
+                loop {
+                    let mut deltas = pool
+                        .iter()
+                        .map(|point| {
+                            let seed = hull.last().unwrap();
+                            point.x.as_f32().sin()
+                        })
+                        .enumerate()
+                        .collect::<Vec<(usize, f32)>>();
+                    deltas.sort_by(|(_, a), (_, b)| a.total_cmp(b));
+                    let pair = deltas.first().unwrap();
+                    let next_point = pool.get(pair.0).unwrap();
+                    if next_point.as_tuple() == seed_point.as_tuple() {
+                        break;
+                    }
+
+                    hull.push(next_point.clone());
+                    pool.remove(pair.0);
+                }
+                Ok(hull)
+            }
+        }
     }
 }
 
